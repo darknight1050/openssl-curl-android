@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export NDK=$HOME/Library/Android/sdk/ndk/22.0.7026061
-export HOST_TAG=darwin-x86_64
+export NDK=$NDK_ROOT
+export HOST_TAG=linux-x86_64
 export MIN_SDK_VERSION=21
 
 export CFLAGS="-Os -ffunction-sections -fdata-sections -fno-unwind-tables -fno-asynchronous-unwind-tables"
