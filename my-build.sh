@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export NDK=/mnt/Development/Tools/android-ndk-r22b-linux
+export NDK=/mnt/c/Development/Tools/android-ndk-r22b-linux
 export HOST_TAG=linux-x86_64
 export MIN_SDK_VERSION=21
 
