@@ -14,38 +14,33 @@ export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
 # curl common configuration arguments
 ARGUMENTS=" \
     --disable-shared \
+    --enable-static \
 	--disable-verbose \
     --disable-manual \
-	--disable-crypto-auth \
 	--disable-unix-sockets \
     --disable-ares \
     --disable-rtsp \
     --disable-ipv6 \
     --disable-proxy \
     --disable-versioned-symbols \
-    --enable-hidden-symbols \
-    --without-libidn \
     --without-librtmp \
-    --without-zlib \
     --disable-dict \
     --disable-file \
     --disable-ftp \
-    --disable-ftps \
     --disable-gopher \
     --disable-imap \
-    --disable-imaps \
     --disable-pop3 \
-    --disable-pop3s \
     --disable-smb \
-    --disable-smbs \
     --disable-smtp \
-    --disable-smtps \
     --disable-telnet \
     --disable-tftp \
+    --disable-debug \
+    --disable-symbol-hiding \
     "
 
 mkdir -p build/curl
 cd curl
+
 autoreconf -fi
 
 # arm64
@@ -60,11 +55,16 @@ export LD=$TOOLCHAIN/bin/$TARGET_HOST-ld
 export RANLIB=$TOOLCHAIN/bin/$TARGET_HOST-ranlib
 export STRIP=$TOOLCHAIN/bin/$TARGET_HOST-strip
 export SSL_DIR=$PWD/../openssl/build/$ANDROID_ARCH
+export ZLIB_DIR=$PWD/../zlib/build/$ANDROID_ARCH
+export BROTLI_DIR=$PWD/../brotli/build_out/$ANDROID_ARCH
 
 ./configure --host=$TARGET_HOST \
             --target=$ANDROID_ARCH \
             --prefix=$PWD/build/$ANDROID_ARCH \
-            --with-ssl=$SSL_DIR $ARGUMENTS \
+            --with-ssl=$SSL_DIR \
+            --with-zlib=$ZLIB_DIR \
+            --with-brotli=$BROTLI_DIR \
+            $ARGUMENTS \
 
 make -j$JOBS
 make install

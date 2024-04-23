@@ -6,3 +6,11 @@
 	path = curl
 	url = https://github.com/curl/curl.git
 	ignore = dirty
+[submodule "zlib"]
+	path = zlib
+	url = https://github.com/madler/zlib
+	ignore = dirty
+[submodule "brotli"]
+	path = brotli
+	url = https://github.com/google/brotli.git
+	ignore = dirty
