@@ -33,4 +33,11 @@ $AR rc ../libcurl.a *.o
 cd ..
 rm -r tmp
 
+mkdir -p shared/zlib
+
+cp -R openssl/$ANDROID_ARCH/include/* shared/
+cp -R zlib/$ANDROID_ARCH/include/* shared/zlib/
+cp -R brotli/$ANDROID_ARCH/include/* shared/
+cp -R curl/$ANDROID_ARCH/include/* shared/
+
 cd ..
