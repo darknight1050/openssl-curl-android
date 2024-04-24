@@ -11,10 +11,9 @@ chmod +x ./build-curl.sh
 ./build-curl.sh
 
 export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
-export TARGET_HOST=aarch64-linux-android
 PATH=$TOOLCHAIN/bin:$PATH
 export ANDROID_ARCH=arm64-v8a
-export AR=$TOOLCHAIN/bin/$TARGET_HOST-ar
+export AR=$TOOLCHAIN/bin/llvm-ar
 
 cd build
 
