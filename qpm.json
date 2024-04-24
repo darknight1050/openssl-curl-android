@@ -10,7 +10,7 @@
       "staticLinking": true,
       "useRelease": true,
       "overrideSoName": "libcurl.a",
-      "branchName": "version-v0.0.01",
+      "branchName": "version-v0.0.1",
       "soLink": "https://github.com/darknight1050/openssl-curl-android/releases/download/v0.0.1/libcurl.a"
     }
   },
