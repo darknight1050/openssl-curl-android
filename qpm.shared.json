@@ -1,0 +1,24 @@
+{
+  "config": {
+    "version": "0.1.0",
+    "sharedDir": "shared",
+    "dependenciesDir": "extern",
+    "info": {
+      "name": "libcurl",
+      "id": "libcurl",
+      "version": "8.7.1",
+      "url": "https://github.com/darknight1050/openssl-curl-android/",
+      "additionalData": {
+        "staticLinking": true,
+        "soLink": "https://github.com/darknight1050/openssl-curl-android/releases/download/v8.7.1/libcurl.a",
+        "overrideSoName": "libcurl.a",
+        "branchName": "version-v8.7.1"
+      }
+    },
+    "workspace": {
+      "scripts": {}
+    },
+    "dependencies": []
+  },
+  "restoredDependencies": []
+}
