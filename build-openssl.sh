@@ -9,8 +9,8 @@ else
 	JOBS=2
 fi
 
-# openssl refers to the host specific toolchain as "ANDROID_NDK_HOME"
-export ANDROID_NDK_HOME=$NDK
+# openssl 3.x refers to the host specific toolchain as "ANDROID_NDK_ROOT"
+export ANDROID_NDK_ROOT=$NDK
 export ANDROID_ARCH=arm64-v8a
 PATH=$NDK/toolchains/llvm/prebuilt/$HOST_TAG/bin:$PATH
 

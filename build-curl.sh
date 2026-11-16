@@ -24,6 +24,7 @@ ARGUMENTS=" \
     --disable-proxy \
     --disable-versioned-symbols \
     --without-librtmp \
+    --without-libpsl \
     --disable-dict \
     --disable-file \
     --disable-ftp \
