@@ -1,0 +1,37 @@
+{
+  "configVersion": "2.0.0",
+  "id": "libcurl",
+  "version": "8.23.0",
+  "additionalData": {
+    "description": "Shared Android ARM64 libcurl with private OpenSSL, zlib, Brotli, zstd, nghttp2, nghttp3 and ngtcp2; IPv6, HTTP/2, HTTP/3, threaded DNS and proxy support",
+    "author": "darknight1050 and upstream contributors",
+    "license": "MIT AND curl AND Apache-2.0 AND Zlib AND BSD-3-Clause",
+    "url": "https://github.com/darknight1050/openssl-curl-android/"
+  },
+  "workspace": {
+    "outBinaries": [
+      "build/libcurl.so"
+    ],
+    "toolchainOut": "toolchain.json",
+    "cmake": false,
+    "ndk": "=29.0.14206865",
+    "scripts": {
+      "build": ["bash ./scripts/my-build.sh"],
+      "package": ["bash ./scripts/package.sh"]
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "dependenciesDirectory": "extern",
+  "sharedDirectory": "build/shared",
+  "compileOptions": {
+    "includePaths": ["", "curl"]
+  },
+  "qmod": {
+    "template": "mod.template.json",
+    "output": "dist/libcurl.qmod",
+    "searchDirs": ["build"],
+    "includeFiles": ["build/THIRD_PARTY_LICENSES.txt"],
+    "downloadUrl": "https://github.com/darknight1050/openssl-curl-android/releases/download/v8.23.0/libcurl.qmod"
+  }
+}

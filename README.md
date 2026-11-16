@@ -1,59 +1,58 @@
-# openssl-curl-android
+# libcurl for Quest
 
-Compile openssl and curl for Android
+QPM v2 shared package bundling curl, OpenSSL, zlib, Brotli, zstd, nghttp2, nghttp3, and ngtcp2.
+Supports IPv6, HTTP/2, HTTP/3, threaded DNS, and proxies.
+Only curl's public API is exported; bundled backends remain private.
 
-## Prerequisites
+Targets **ARM64, Android API 27** (including Android 10), built with **NDK r29**.
+Package version: **8.23.0**.
 
-Make sure you have `Android NDK` installed.
+| Library | Version |
+| --- | --- |
+| curl | 8.23.0 |
+| OpenSSL | 4.1.0 |
+| zlib | 1.4 |
+| Brotli | 1.2.1 |
+| zstd | 1.5.7 |
+| nghttp2 | 1.71.0 |
+| nghttp3 | 1.19.0 |
+| ngtcp2 | 1.26.0 |
 
-You may also need to install `autoconf` and `libtool` toolchains as well as build essentials.
+## Build
 
-## Download
-
-If you do not want to compile them yourself, you can download pre-compiled static libraries from [releases](https://github.com/robertying/openssl-curl-android/releases). They are in `build.tar.gz`.
-
-Doing your own compilation is recommended, since the pre-compiled binary can become outdated soon.
-
-Checkout newer versions in git submodules to compile newer versions of the libraries.
-
-## Usage
+Use Linux/WSL with QPM v2, Git, Python 3, Perl, Make, CMake, Autoconf, Automake,
+Libtool, pkg-config, and a C/C++ toolchain installed. Commands below use `qpm2`.
 
 ```bash
-git clone https://github.com/robertying/openssl-curl-android.git
-cd openssl-curl-android
-git submodule update --init --recursive
-
-export NDK=your_android_ndk_root_here # e.g. $HOME/Library/Android/sdk/ndk/22.0.7026061
-export HOST_TAG=see_this_table_for_info # e.g. darwin-x86_64, see https://developer.android.com/ndk/guides/other_build_systems#overview
-export MIN_SDK_VERSION=21 # or any version you want
-
-chmod +x ./build.sh
-./build.sh
+git submodule update --init --depth 1
+git -C nghttp3 submodule update --init --depth 1 lib/sfparse
+qpm2 ndk resolve -d
+qpm2 restore
+qpm2 build
+bash scripts/package.sh
 ```
 
-All compiled libs are located in `build/openssl` and `build/curl` directory.
+Scripts are in `scripts/`. `dist/` contains the QPKG, QMOD, stripped `libcurl.so`,
+matching `libcurl-debug.so` with DWARF symbols, build ID, build metadata, and SHA256 checksums.
 
-Use NDK to link those libs, part of `Android.mk` example:
+## Use
 
-```makefile
-include $(CLEAR_VARS)
-LOCAL_MODULE := curl
-LOCAL_SRC_FILES := build/curl/$(TARGET_ARCH_ABI)/libcurl.a
-include $(PREBUILT_STATIC_LIBRARY)
+Add to `qpm2.json`, then run `qpm2 restore`:
+
+```json
+"dependencies": {
+  "libcurl": { "versionRange": "^8.23.0", "qmod": "required" }
+}
 ```
 
-## Options
+For an unpublished local build, first run `qpm2 install --path path/to/libcurl-8.23.0.qpkg`.
+Include `<libcurl/curl.h>` or `<curl/curl.h>` and link `extern/libs/libcurl.so`.
+Rebuild consumers and generate their QMODs with QPM to include the required dependency.
+Install `libcurl.qmod` once: it places `libcurl.so` in Scotland2's `libs`.
+Consumers must not embed another copy in their QMODs.
 
-- Change scripts' configure arguments to meet your own needs.
+## CI
 
-- For now, using TLS (https) in Android would throw `peer verification failed`.
-
-  Please explicitly set `curl_easy_setopt(curl, CURLOPT_CAINFO, CA_BUNDLE_PATH);` where `CA_BUNDLE_PATH` is your ca bundle path in the device storage.
-
-  You can download and copy [cacert.pem](https://curl.haxx.se/docs/caextract.html) to Android assets or the device internal storage to get TLS working for libcurl.
-
-## Working Examples
-
-- See this minimal example which calls `curl` from Android app, using `JNI` to use `libcurl`: [AndroidCurlExample](https://github.com/robertying/AndroidCurlExample). It includes `Android.mk` setup and `JNI` configurations.
-
-- Checkout this more complex [repo](https://github.com/robertying/CampusNet-Android/blob/master/app/src/main/cpp/jni) to see how to integrate other compiled static libraries into an existing Android project, including `Android.mk` setup and `JNI` configurations.
+Pushes and PRs build all artifacts. A `v<version>` tag publishes them to a GitHub
+release and registers the shared QPKG using the **QPM_KEY** secret.
+Update both `version` and `qmod.downloadUrl` in `qpm2.json` before tagging.

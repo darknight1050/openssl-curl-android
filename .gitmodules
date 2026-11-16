@@ -14,3 +14,15 @@
 	path = brotli
 	url = https://github.com/google/brotli.git
 	ignore = dirty
+[submodule "nghttp2"]
+	path = nghttp2
+	url = https://github.com/nghttp2/nghttp2.git
+[submodule "nghttp3"]
+	path = nghttp3
+	url = https://github.com/ngtcp2/nghttp3.git
+[submodule "ngtcp2"]
+	path = ngtcp2
+	url = https://github.com/ngtcp2/ngtcp2.git
+[submodule "zstd"]
+	path = zstd
+	url = https://github.com/meta/zstd.git

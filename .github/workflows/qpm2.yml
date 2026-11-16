@@ -1,0 +1,102 @@
+name: QPM v2
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+env:
+  QPM_DISABLE_GLOBAL_CONFIG: '1'
+
+jobs:
+  build:
+    if: github.event_name != 'push' || github.ref_type != 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps: &package_steps
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Fetch nghttp3 structured field parser
+        run: git -C nghttp3 submodule update --init --depth 1 lib/sfparse
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y build-essential cmake ninja-build perl python3 autoconf automake libtool pkg-config
+
+      - name: Check release configuration
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          QPM_TOKEN: ${{ secrets.QPM_KEY }}
+        run: |
+          test -n "$QPM_TOKEN" || { echo 'Repository secret QPM_KEY is required'; exit 1; }
+          python3 - <<'PY'
+          import json, os
+          version = json.load(open('qpm2.json'))['version']
+          assert os.environ['RELEASE_TAG'] == 'v' + version, 'Tag must match qpm2.json version'
+          config = json.load(open('qpm2.json'))
+          expected = 'https://github.com/' + os.environ['GITHUB_REPOSITORY'] + '/releases/download/v' + version + '/libcurl.qmod'
+          assert config['qmod']['downloadUrl'] == expected, 'Update QMOD downloadUrl for this version/repository'
+          PY
+
+      - name: Configure isolated QPM cache
+        run: printf '%s\n' '{"cache":".qpm-ci-cache","symlink":false}' > qpm.settings.json
+
+      - name: Set up QPM v2 and NDK
+        uses: Fernthedev/qpm-action@v2
+        with:
+          restore: true
+          cache: false
+          resolve_ndk: true
+
+      - name: Build Android ARM64 bundle
+        run: qpm2 build --offline
+
+      - name: Package QPKG, QMOD, release and debug binaries
+        run: bash scripts/package.sh
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcurl-release
+          path: dist/
+          if-no-files-found: error
+
+      - name: Publish release and register QPM package
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          QPM_TOKEN: ${{ secrets.QPM_KEY }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          test -n "$QPM_TOKEN" || { echo 'Repository secret QPM_KEY is required'; exit 1; }
+          package=$(python3 -c 'import json; p=json.load(open("qpm2.json")); print(p["id"] + "-" + p["version"] + ".qpkg")')
+          release_flags=()
+          if [[ "$RELEASE_TAG" == *-* ]]; then release_flags+=(--prerelease); fi
+          printf 'ARM64 Android API 27. Release and debug ELF build ID: `%s`.\n' "$(cat dist/build-id.txt)" > release-notes.md
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag --generate-notes --notes-file release-notes.md "${release_flags[@]}"
+          fi
+          gh release upload "$RELEASE_TAG" "dist/$package" dist/libcurl.qmod \
+            dist/libcurl.so dist/libcurl-debug.so dist/build-id.txt dist/build-info.json dist/SHA256SUMS --clobber
+          qpm2 publish "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG/$package" \
+            --backend qpackages --token "$QPM_TOKEN"
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps: *package_steps

@@ -1,13 +1,8 @@
 #!/bin/bash
 
-#Change this env variable to the number of processors you have
-if [ -f /proc/cpuinfo ]; then
-	JOBS=$(grep flags /proc/cpuinfo |wc -l)
-elif [ ! -z $(which sysctl) ]; then
-	JOBS=$(sysctl -n hw.ncpu)
-else
-	JOBS=2
-fi
+set -euo pipefail
+
+JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN)}
 
 export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
 
@@ -22,12 +17,12 @@ export AR=$TOOLCHAIN/bin/llvm-ar
 export CC=$TOOLCHAIN/bin/$TARGET_HOST$MIN_SDK_VERSION-clang
 export AS=$CC
 export CXX=$TOOLCHAIN/bin/$TARGET_HOST$MIN_SDK_VERSION-clang++
-export LD=$TOOLCHAIN/bin/ld
+export LD=$TOOLCHAIN/bin/ld.lld
 export RANLIB=$TOOLCHAIN/bin/llvm-ranlib
 export NM=$TOOLCHAIN/bin/llvm-nm
 export STRIP=$TOOLCHAIN/bin/llvm-strip
 
-./configure --prefix=$PWD/build/$ANDROID_ARCH --static \
+bash ./configure --prefix=$PWD/build/$ANDROID_ARCH --static \
 
 make -j$JOBS
 make install

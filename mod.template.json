@@ -1,0 +1,14 @@
+{
+  "_QPVersion": "1.1.0",
+  "name": "libcurl",
+  "id": "${mod_id}",
+  "version": "${version}",
+  "author": "darknight1050 and upstream contributors",
+  "description": "Shared curl with private TLS, compression and HTTP backends",
+  "modloader": "Scotland2",
+  "isLibrary": true,
+  "dependencies": [],
+  "modFiles": [],
+  "lateModFiles": [],
+  "libraryFiles": ["libcurl.so"]
+}

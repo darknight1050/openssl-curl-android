@@ -1,13 +1,8 @@
 #!/bin/bash
 
-#Change this env variable to the number of processors you have
-if [ -f /proc/cpuinfo ]; then
-	JOBS=$(grep flags /proc/cpuinfo |wc -l)
-elif [ ! -z $(which sysctl) ]; then
-	JOBS=$(sysctl -n hw.ncpu)
-else
-	JOBS=2
-fi
+set -euo pipefail
+
+JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN)}
 
 export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
 
@@ -23,6 +18,7 @@ export ANDROID_ARCH=arm64-v8a
 rm -rf cmake_build/$ANDROID_ARCH
 
 cmake -S . -B cmake_build/$ANDROID_ARCH \
+      -DCMAKE_C_FLAGS="$CFLAGS" \
       -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=$ANDROID_ARCH \
       -DANDROID_PLATFORM=android-$MIN_SDK_VERSION \

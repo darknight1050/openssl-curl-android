@@ -1,13 +1,8 @@
 #!/bin/bash
 
-#Change this env variable to the number of processors you have
-if [ -f /proc/cpuinfo ]; then
-	JOBS=$(grep flags /proc/cpuinfo |wc -l)
-elif [ ! -z $(which sysctl) ]; then
-	JOBS=$(sysctl -n hw.ncpu)
-else
-	JOBS=2
-fi
+set -euo pipefail
+
+JOBS=${JOBS:-$(getconf _NPROCESSORS_ONLN)}
 
 # openssl 3.x refers to the host specific toolchain as "ANDROID_NDK_ROOT"
 export ANDROID_NDK_ROOT=$NDK
@@ -18,11 +13,10 @@ mkdir -p build/openssl
 cd openssl
 
 # openssl does not handle api suffix well
-./Configure android-arm64 no-shared \
+perl ./Configure android-arm64 no-shared no-tests no-module \
  -D__ANDROID_API__=$MIN_SDK_VERSION \
  --prefix=$PWD/build/$ANDROID_ARCH \
 
-make depend
 make -j$JOBS
 make install_sw
 mkdir -p ../build/openssl/$ANDROID_ARCH
